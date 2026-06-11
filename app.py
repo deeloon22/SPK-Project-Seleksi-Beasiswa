@@ -345,10 +345,19 @@ with tab_input:
     st.markdown(f'<div class="info-card" style="margin-bottom:16px"><span style="color:#8b949e;font-size:13px">Masukkan data untuk <b style="color:#58a6ff">{int(n_alt)}</b> pendaftar berikut.</span></div>',
                 unsafe_allow_html=True)
 
-    # Inisiasi session state
-    if "names" not in st.session_state or len(st.session_state.names) != int(n_alt):
-        st.session_state.names  = [f"Pendaftar {i+1}" for i in range(int(n_alt))]
-        st.session_state.values = [[3.5, 2000000.0, 80.0, 8.0, 2.0] for _ in range(int(n_alt))]
+    # Inisiasi / reset session state saat jumlah pendaftar berubah
+    n_alt_int = int(n_alt)
+    default_row = [3.5, 2000000.0, 80.0, 8.0, 2.0]
+
+    if "names" not in st.session_state or len(st.session_state.names) != n_alt_int:
+        st.session_state.names  = [f"Pendaftar {i+1}" for i in range(n_alt_int)]
+        st.session_state.data_values = [default_row.copy() for _ in range(n_alt_int)]
+
+    # Pastikan panjang values selalu sama dengan n_alt (jaga-jaga)
+    while len(st.session_state.data_values) < n_alt_int:
+        st.session_state.data_values.append(default_row.copy())
+    while len(st.session_state.names) < n_alt_int:
+        st.session_state.names.append(f"Pendaftar {len(st.session_state.names)+1}")
 
     # Form input
     with st.form("input_form"):
@@ -360,7 +369,7 @@ with tab_input:
         for ci, k in enumerate(KRITERIA):
             cols_head[ci+1].markdown(f'<div style="font-size:11px;color:#8b949e;font-weight:600;padding:4px 0;text-align:center">{k["kode"]}<br><span style="color:#58a6ff">{k["bobot"]:.2f}</span></div>', unsafe_allow_html=True)
 
-        for i in range(int(n_alt)):
+        for i in range(n_alt_int):
             cols = st.columns([2] + [1]*5)
             name = cols[0].text_input(f"Nama {i+1}", value=st.session_state.names[i],
                                       label_visibility="collapsed", key=f"name_{i}")
@@ -368,26 +377,28 @@ with tab_input:
             row_vals = []
             for j, k in enumerate(KRITERIA):
                 lo, hi, step, def_v = INPUT_CFG[k["nama"]]
+                saved_val = st.session_state.data_values[i][j] if j < len(st.session_state.data_values[i]) else def_v
                 v = cols[j+1].number_input(
                     k["nama"], min_value=float(lo), max_value=float(hi),
-                    value=float(st.session_state.values[i][j]),
+                    value=float(saved_val),
                     step=float(step), label_visibility="collapsed", key=f"val_{i}_{j}"
                 )
                 row_vals.append(v)
             values_input.append(row_vals)
 
+        st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
         submitted = st.form_submit_button("Jalankan Analisis SPK", use_container_width=True)
 
     if submitted:
         st.session_state.names  = names_input
-        st.session_state.values = values_input
+        st.session_state.data_values = values_input
         st.session_state.ready  = True
         st.success("Data berhasil disimpan. Buka tab metode atau Kesimpulan untuk melihat hasil.")
 
     # Preview matriks
     if st.session_state.get("ready"):
         st.markdown('<div class="section-header" style="border-color:#3fb950">Matriks Keputusan</div>', unsafe_allow_html=True)
-        df_mx = pd.DataFrame(st.session_state.values,
+        df_mx = pd.DataFrame(st.session_state.data_values,
                              index=st.session_state.names, columns=K_NAMA)
         df_show = df_mx.reset_index().rename(columns={"index":"Pendaftar"})
         show_table(df_show, "Tabel 1. Matriks Keputusan Awal (X)",
@@ -408,7 +419,7 @@ if not st.session_state.get("ready", False):
 
 # ── Siapkan data ─────────────────────────────────────────────
 alternatif = st.session_state.names
-df_matrix  = pd.DataFrame(st.session_state.values, index=alternatif, columns=K_NAMA)
+df_matrix  = pd.DataFrame(st.session_state.data_values, index=alternatif, columns=K_NAMA)
 
 # Hitung semua metode
 R_saw,   saw_sc   = calc_saw(df_matrix,   K_BOBOT, K_JENIS)
