@@ -7,7 +7,7 @@ from collections import Counter
 import warnings
 warnings.filterwarnings("ignore")
 
-st.set_page_config(page_title="SPK Seleksi Beasiswa", page_icon="🎓",
+st.set_page_config(page_title="SPK Seleksi Beasiswa", page_icon="",
                    layout="wide", initial_sidebar_state="expanded")
 
 # ── CSS ──────────────────────────────────────────────────────
@@ -252,7 +252,7 @@ def mmn(s):
 with st.sidebar:
     st.markdown("""
     <div style="text-align:center;padding:24px 0 18px">
-      <div style="font-size:38px">🎓</div>
+      <div style="font-size:38px"></div>
       <div style="font-size:18px;font-weight:800;color:#e6edf3;margin-top:8px">SPK Beasiswa</div>
       <div style="font-size:12px;color:#8b949e;margin-top:4px">Sistem Penunjang Keputusan</div>
     </div><hr>""", unsafe_allow_html=True)
@@ -287,7 +287,7 @@ st.markdown("""
 <div style="background:linear-gradient(135deg,#161b22,#1c2128);border:1px solid #30363d;
             border-radius:16px;padding:32px 36px;margin-bottom:24px;box-shadow:0 4px 24px #00000055">
   <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap">
-    <div style="font-size:52px;line-height:1">🎓</div>
+    <div style="font-size:52px;line-height:1"></div>
     <div style="flex:1">
       <h1 style="margin:0;font-size:24px;font-weight:800;color:#e6edf3;letter-spacing:-.3px">
         Sistem Penunjang Keputusan (SPK)</h1>
